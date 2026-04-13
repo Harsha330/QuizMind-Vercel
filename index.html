@@ -41,7 +41,6 @@
   .form-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(79,142,247,.15)}
   .key-wrap{position:relative;margin-bottom:1rem}
   .key-wrap .form-input{margin-bottom:0;padding-right:3.5rem}
-  .show-key{position:absolute;right:.9rem;top:.75rem;background:none;border:none;color:var(--muted);
     cursor:pointer;font-size:.75rem;font-family:'DM Sans',sans-serif}
   .btn-primary{width:100%;padding:.9rem;background:linear-gradient(135deg,var(--accent),var(--accent2));
     border:none;border-radius:12px;color:#fff;font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700;
@@ -212,15 +211,10 @@
       <input id="w-name" class="form-input" type="text" placeholder="e.g. Aditya Kumar" autocomplete="name">
       <label class="form-label">Email Address</label>
       <input id="w-email" class="form-input" type="email" placeholder="you@example.com" autocomplete="email">
-      <label class="form-label">Grok API Key</label>
-      <div class="key-wrap">
-        <input id="w-key" class="form-input" type="password" placeholder="xai-••••••••••••••••">
-        <button class="show-key" onclick="toggleKey()">show</button>
-      </div>
       <div class="form-err" id="w-err"></div>
       <button class="btn-primary" onclick="doLogin()">Start Learning →</button>
     </div>
-    <p class="form-note">🔒 Key saved in your browser · never sent to us · quiz data stored locally</p>
+    <p class="form-note">🔒 Quiz data stored locally in your browser</p>
   </div>
 </div>
 
@@ -355,7 +349,6 @@ function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
-function toggleKey(){const i=document.getElementById('w-key');i.type=i.type==='password'?'text':'password';}
 function setTopic(t){document.getElementById('s-topic').value=t;}
 function showErr(msg){const e=document.getElementById('w-err');e.textContent=msg;e.style.display=msg?'block':'none';}
 
@@ -371,11 +364,8 @@ function showToast(streak,bonus){
 function doLogin(){
   const name=document.getElementById('w-name').value.trim();
   const email=document.getElementById('w-email').value.trim();
-  const key=document.getElementById('w-key').value.trim();
   if(!name||!email){showErr('Name and email are required.');return;}
-  if(!key.startsWith('xai-')){showErr('API key must start with xai-');return;}
   showErr('');
-  save('key', key);
   const uid = email.toLowerCase().replace(/[@.]/g,'_');
   let u = load('user_'+uid, null);
   const today = new Date().toISOString().slice(0,10);
@@ -406,12 +396,11 @@ async function startQuiz(){
   currentTopic=topic;
   document.getElementById('l-topic').textContent=topic;
   showScreen('loading');
-  const key=load('key','');
   try{
     const res=await fetch(`${API_BASE}/generate`,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({topic,num_questions:numQ,api_key:key})
+      body:JSON.stringify({topic,num_questions:numQ})
     });
     const data=await res.json();
     if(data.error){alert('Quiz generation failed: '+data.error);showScreen('setup');return;}
